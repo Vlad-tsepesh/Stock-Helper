@@ -3,18 +3,18 @@ package com.example.Stock.Helper;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
 public class ImageResizer {
 
     public static Resource resize(String inputPath, int maxSize) throws IOException {
-        ClassPathResource resource = new ClassPathResource("bike.jpg");
+        FileSystemResource resource = new FileSystemResource(inputPath);
         BufferedImage originalImage = ImageIO.read(resource.getInputStream());
 
         // calculate proportional scale
