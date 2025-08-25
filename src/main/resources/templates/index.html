@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Upload Folder</title>
+</head>
+<body>
+<h1>Select a folder to upload</h1>
+<form method="post" enctype="multipart/form-data" action="/upload">
+  <input type="file" name="images" multiple>
+  <button type="submit">Upload and Download ZIP</button>
+</form>
+</body>
+</html>

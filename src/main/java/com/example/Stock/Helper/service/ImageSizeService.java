@@ -1,25 +1,25 @@
-package com.example.Stock.Helper;
+package com.example.Stock.Helper.service;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class ImageResizer {
+@Service
+public class ImageSizeService {
 
-    public static Resource resize(String inputPath, int maxSize) throws IOException {
-        FileSystemResource resource = new FileSystemResource(inputPath);
-        BufferedImage originalImage = ImageIO.read(resource.getInputStream());
+    public Resource resizeImage(MultipartFile file, int maxSize) throws IOException {
+        BufferedImage originalImage = ImageIO.read(file.getInputStream());
 
-        // calculate proportional scale
         double scale = (double) maxSize / originalImage.getWidth();
-
         int targetWidth = (int) (originalImage.getWidth() * scale);
         int targetHeight = (int) (originalImage.getHeight() * scale);
 
