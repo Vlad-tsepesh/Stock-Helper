@@ -6,10 +6,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -29,21 +27,8 @@ public class ImageController {
 
     @GetMapping("/")
     public String index() {
-        return "index2"; // returns index.html
+        return "index"; // returns index.html
     }
-
-    @PostMapping("/showFile")
-    public String showFile(@RequestParam("file") MultipartFile file, Model model) throws IOException {
-        if (file.isEmpty()) {
-            model.addAttribute("message", "No file selected!");
-            return "result";
-        }
-//        imageService.addMetadata(file);
-
-        model.addAttribute("message", "File selected: " + file.getOriginalFilename());
-        return "result";
-    }
-
 
     @PostMapping("/upload")
     public ResponseEntity<byte[]> uploadFiles(MultipartFile[] images) throws IOException {
@@ -61,9 +46,6 @@ public class ImageController {
 
         byte[] zipBytes = baos.toByteArray();
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"images.zip\"")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(zipBytes);
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"images.zip\"").contentType(MediaType.APPLICATION_OCTET_STREAM).body(zipBytes);
     }
 }
