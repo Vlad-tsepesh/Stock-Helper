@@ -1,5 +1,8 @@
 package com.example.Stock.Helper.application.service;
 
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
+
 public interface ImageService {
-    void addMetadata(String pathToImage) throws Exception;
+    Resource changeMetadata(MultipartFile file) throws Exception;
 }

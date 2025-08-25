@@ -5,6 +5,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -15,8 +16,8 @@ import java.io.IOException;
 @Service
 public class ImageSizeService {
 
-    public Resource resizeImage(String input, int maxSize) throws IOException {
-        BufferedImage originalImage = ImageIO.read(new FileSystemResource(input).getInputStream());
+    public Resource resizeImage(MultipartFile file, int maxSize) throws IOException {
+        BufferedImage originalImage = ImageIO.read(file.getInputStream());
 
         double scale = (double) maxSize / originalImage.getWidth();
         int targetWidth = (int) (originalImage.getWidth() * scale);

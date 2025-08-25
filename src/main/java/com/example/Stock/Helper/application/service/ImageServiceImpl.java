@@ -5,6 +5,7 @@ import com.example.Stock.Helper.service.OpenAiService;
 import com.example.Stock.Helper.service.XmpService;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -23,10 +24,11 @@ public class ImageServiceImpl implements ImageService{
 
 
     @Override
-    public void addMetadata(String pathToImage) throws Exception {
-        System.out.println(pathToImage);
-        Resource resizedResource = imageSizeService.resizeImage(pathToImage, 500);
+    public Resource changeMetadata(MultipartFile file) throws Exception {
+        System.out.println(file.getOriginalFilename());
+        Resource resizedResource = imageSizeService.resizeImage(file, 500);
         Map<String, Object> metadata = openAiService.generateDescription(resizedResource);
-        xmpService.updateXmp(pathToImage, metadata);
+        return xmpService.updateXmp(file, metadata);
     }
+
 }

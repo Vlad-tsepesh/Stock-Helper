@@ -1,6 +1,7 @@
 package com.example.Stock.Helper.controller;
 
 import com.example.Stock.Helper.application.service.ImageService;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -48,11 +50,13 @@ public class ImageController {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             for (MultipartFile file : images) {
-
-                zos.putNextEntry(new ZipEntry(file.getOriginalFilename()));
-                zos.write(file.getBytes());
+                Resource updatedResource = imageService.changeMetadata(file);
+                zos.putNextEntry(new ZipEntry(Objects.requireNonNull(updatedResource.getFilename())));
+                updatedResource.getInputStream().transferTo(zos);
                 zos.closeEntry();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         byte[] zipBytes = baos.toByteArray();
