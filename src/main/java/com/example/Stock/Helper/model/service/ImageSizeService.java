@@ -1,4 +1,4 @@
-package com.example.Stock.Helper.service;
+package com.example.Stock.Helper.model.service;
 
 
 import org.springframework.core.io.ByteArrayResource;

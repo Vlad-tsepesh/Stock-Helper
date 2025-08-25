@@ -1,5 +1,6 @@
-package com.example.Stock.Helper.service;
+package com.example.Stock.Helper.model.service;
 
+import com.example.Stock.Helper.model.record.ImageDescription;
 import org.apache.commons.imaging.formats.jpeg.xmp.JpegXmpRewriter;
 import java.io.ByteArrayOutputStream;
 import org.apache.xmpbox.XMPMetadata;
@@ -11,26 +12,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class XmpService {
 
-    public Resource updateXmp(MultipartFile file, Map<String, Object> metadata) throws Exception {
-        String title = (String) metadata.get("title");
-        String description = (String) metadata.get("description");
-        List<String> keywords = (List<String>) metadata.get("keywords");
+    public Resource updateXmp(MultipartFile file, ImageDescription imageDescription) throws Exception {
 
         XMPMetadata xmp = XMPMetadata.createXMPMetadata();
         DublinCoreSchema dc = xmp.createAndAddDublinCoreSchema();
-        dc.setDescription(description);
-        dc.setTitle(title);
 
-        for (String keyword : keywords) {
+        dc.setDescription(imageDescription.description());
+        dc.setTitle(imageDescription.title());
+
+        for (String keyword : imageDescription.keywords()) {
             dc.addSubject(keyword);
         }
 
@@ -49,7 +45,7 @@ public class XmpService {
         return new ByteArrayResource(outputStream.toByteArray()) {
             @Override
             public String getFilename() {
-                return title + ".jpg";
+                return imageDescription.title() + ".jpg";
             }
         };
     }
