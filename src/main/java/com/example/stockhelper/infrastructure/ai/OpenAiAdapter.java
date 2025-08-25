@@ -27,25 +27,15 @@ public class OpenAiAdapter implements ImageDescriptionGeneratorPort {
     @Override
     public ImageDescription generateDescription(Resource image) {
         var userMessage = UserMessage.builder().text(stockDescriptionPrompt).media(List.of(new Media(MimeTypeUtils.IMAGE_PNG, image))).build();
-
         String response = chatModel.call(new Prompt(List.of(userMessage), OpenAiChatOptions.builder().model("gpt-4o").build()).getUserMessage());
-
-        ImageDescription description = parseJson(response);
-        validate(description, image);
-        return description;
+        return parseJson(response);
     }
 
     private ImageDescription parseJson(String json) {
         try {
             return objectMapper.readValue(json, ImageDescription.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse OpenAI JSON response", e);
-        }
-    }
-
-    private void validate(ImageDescription description, Resource image) {
-        if (description.title() == null || description.keywords() == null) {
-            throw new IllegalStateException("Invalid AI response: missing required fields for image " + image.getFilename());
+            throw new RuntimeException("Failed to parse AI response", e);
         }
     }
 }

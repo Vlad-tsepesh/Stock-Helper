@@ -11,6 +11,6 @@ public class ImageDescriptionValidator {
         if (desc.title() == null || desc.title().isBlank()) throw new IllegalArgumentException("Title cannot be empty");
         if (desc.description() == null || desc.description().isBlank()) throw new IllegalArgumentException("Description cannot be empty");
         if (desc.keywords() == null || desc.keywords().size() < 10)
-            throw new IllegalArgumentException("Keywords must contain at least 5 entries");
+            throw new IllegalArgumentException("Keywords must contain at least 10 entries");
     }
 }

@@ -21,7 +21,6 @@ public class XmpServiceAdapter implements XmpUpdaterPort {
 
     @Override
     public Resource updateXmp(MultipartFile file, ImageDescription imageDescription) {
-        validateInput(file, imageDescription);
 
         try (InputStream is = file.getInputStream();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -41,13 +40,6 @@ public class XmpServiceAdapter implements XmpUpdaterPort {
         }
     }
 
-    private void validateInput(MultipartFile file, ImageDescription desc) {
-        if (file.isEmpty()) throw new IllegalArgumentException("File is empty");
-        if (desc.title() == null || desc.title().isBlank()) throw new IllegalArgumentException("Title cannot be empty");
-        if (desc.description() == null) throw new IllegalArgumentException("Description cannot be null");
-        if (desc.keywords() == null || desc.keywords().isEmpty()) throw new IllegalArgumentException("Keywords cannot be empty");
-    }
-
     private XMPMetadata buildXmp(ImageDescription desc) {
         XMPMetadata xmp = XMPMetadata.createXMPMetadata();
         DublinCoreSchema dc = xmp.createAndAddDublinCoreSchema();
@@ -65,6 +57,6 @@ public class XmpServiceAdapter implements XmpUpdaterPort {
     }
 
     private String sanitizeFilename(String title) {
-        return title.replaceAll("[^a-zA-Z0-9\\-_\\.]", "_") + ".jpg";
+        return title.replaceAll("[^a-zA-Z0-9\\-_.]", " ") + ".jpg";
     }
 }
