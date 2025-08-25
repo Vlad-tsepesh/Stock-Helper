@@ -1,6 +1,7 @@
-package com.example.Stock.Helper.controller;
+package com.example.stockhelper.api.controller;
 
-import com.example.Stock.Helper.application.service.ImageService;
+import com.example.stockhelper.application.port.in.DescribeAndTagImageUseCase;
+import com.example.stockhelper.application.service.DescribeAndTagImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +22,7 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 public class ImageController {
 
-    private final ImageService imageService;
+    private final DescribeAndTagImageUseCase useCase;
 
     @GetMapping("/")
     public String index() {
@@ -33,7 +34,7 @@ public class ImageController {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             for (MultipartFile file : images) {
-                Resource updatedResource = imageService.changeMetadata(file);
+                Resource updatedResource = useCase.process(file);
                 zos.putNextEntry(new ZipEntry(Objects.requireNonNull(updatedResource.getFilename())));
                 updatedResource.getInputStream().transferTo(zos);
                 zos.closeEntry();

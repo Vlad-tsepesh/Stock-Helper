@@ -1,4 +1,4 @@
-package com.example.Stock.Helper.component;
+package com.example.stockhelper.application.components;
 
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

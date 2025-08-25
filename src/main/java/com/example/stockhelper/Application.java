@@ -1,4 +1,4 @@
-package com.example.Stock.Helper;
+package com.example.stockhelper;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

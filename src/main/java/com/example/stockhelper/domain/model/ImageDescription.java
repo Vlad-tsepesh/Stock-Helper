@@ -1,4 +1,4 @@
-package com.example.Stock.Helper.model.record;
+package com.example.stockhelper.domain.model;
 
 import java.util.List;
 

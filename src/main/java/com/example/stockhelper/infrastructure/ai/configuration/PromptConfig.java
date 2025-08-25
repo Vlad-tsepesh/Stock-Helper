@@ -1,4 +1,4 @@
-package com.example.Stock.Helper.model.configuration;
+package com.example.stockhelper.infrastructure.ai.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
