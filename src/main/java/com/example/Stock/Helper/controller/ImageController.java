@@ -1,35 +1,33 @@
 package com.example.Stock.Helper.controller;
 
-import org.springframework.ui.Model;
-import com.example.Stock.Helper.service.ImageSizeService;
-import com.example.Stock.Helper.service.OpenAiService;
-import com.example.Stock.Helper.service.XmpService;
-import org.springframework.core.io.Resource;
+import com.example.Stock.Helper.application.service.ImageService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Controller
 public class ImageController {
 
-    private final OpenAiService openAiService;
-    private final ImageSizeService imageSizeService;
-    private final XmpService xmpService;
+    private final ImageService imageService;
 
-    public ImageController(OpenAiService openAiService, ImageSizeService imageSizeService, XmpService xmpService) {
-        this.openAiService = openAiService;
-        this.imageSizeService = imageSizeService;
-        this.xmpService = xmpService;
+    public ImageController(ImageService imageService) {
+        this.imageService = imageService;
     }
 
     @GetMapping("/")
     public String index() {
-        return "index"; // returns index.html
+        return "index2"; // returns index.html
     }
 
     @PostMapping("/showFile")
@@ -38,13 +36,30 @@ public class ImageController {
             model.addAttribute("message", "No file selected!");
             return "result";
         }
-
-//        Resource resizedResource = imageSizeService.resizeImage(path, 500);
-//        Map<String, Object> metadata = openAiService.generateDescription(resizedResource);
-//        xmpService.updateXmp(path, metadata);
-
+//        imageService.addMetadata(file);
 
         model.addAttribute("message", "File selected: " + file.getOriginalFilename());
         return "result";
+    }
+
+
+    @PostMapping("/upload")
+    public ResponseEntity<byte[]> uploadFiles(MultipartFile[] images) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            for (MultipartFile file : images) {
+
+                zos.putNextEntry(new ZipEntry(file.getOriginalFilename()));
+                zos.write(file.getBytes());
+                zos.closeEntry();
+            }
+        }
+
+        byte[] zipBytes = baos.toByteArray();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"images.zip\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(zipBytes);
     }
 }

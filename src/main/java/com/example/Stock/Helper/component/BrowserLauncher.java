@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class BrowserLauncher {
+
+
     @EventListener(ApplicationReadyEvent.class)
     public void launchBrowser() {
         try { Desktop.getDesktop().browse(new URI("http://localhost:8080"));
