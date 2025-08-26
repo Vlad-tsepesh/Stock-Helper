@@ -1,6 +1,6 @@
 package com.example.stockhelper.infrastructure.adapters;
 
-import com.example.stockhelper.application.port.out.ImageDescriptionGeneratorPort;
+import com.example.stockhelper.application.ports.out.ImageDescriptionGeneratorPort;
 import com.example.stockhelper.domain.model.ImageDescription;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

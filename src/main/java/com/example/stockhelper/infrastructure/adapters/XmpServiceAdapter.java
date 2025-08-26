@@ -1,7 +1,7 @@
 package com.example.stockhelper.infrastructure.adapters;
 
 import com.example.stockhelper.domain.model.ImageRequest;
-import com.example.stockhelper.application.port.out.XmpUpdaterPort;
+import com.example.stockhelper.application.ports.out.XmpUpdaterPort;
 import com.example.stockhelper.application.exceptions.XmpUpdateException;
 import com.example.stockhelper.domain.model.ImageDescription;
 import org.apache.commons.imaging.formats.jpeg.xmp.JpegXmpRewriter;

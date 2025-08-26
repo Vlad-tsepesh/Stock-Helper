@@ -1,7 +1,7 @@
 package com.example.stockhelper.infrastructure.adapters;
 
 import com.example.stockhelper.domain.model.ImageRequest;
-import com.example.stockhelper.application.port.out.ImageResizerPort;
+import com.example.stockhelper.application.ports.out.ImageResizerPort;
 import com.example.stockhelper.utils.ImageUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;

@@ -1,4 +1,4 @@
-package com.example.stockhelper.application.port.out;
+package com.example.stockhelper.application.ports.out;
 
 import org.springframework.core.io.Resource;
 import java.util.List;

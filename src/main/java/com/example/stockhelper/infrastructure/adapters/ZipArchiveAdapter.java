@@ -1,6 +1,6 @@
 package com.example.stockhelper.infrastructure.adapters;
 
-import com.example.stockhelper.application.port.out.ImageArchivePort;
+import com.example.stockhelper.application.ports.out.ImageArchivePort;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;

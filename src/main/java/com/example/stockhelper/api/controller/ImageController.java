@@ -1,6 +1,6 @@
 package com.example.stockhelper.api.controller;
 
-import com.example.stockhelper.application.port.in.DescribeAndTagImageUseCase;
+import com.example.stockhelper.application.ports.in.DescribeAndTagImageUseCase;
 import com.example.stockhelper.domain.model.ImageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
