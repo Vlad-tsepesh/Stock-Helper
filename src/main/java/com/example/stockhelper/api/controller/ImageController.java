@@ -5,11 +5,14 @@ import com.example.stockhelper.domain.model.ImageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,7 +27,7 @@ public class ImageController {
 
     @GetMapping("/")
     public String index() {
-        return "index"; // returns index.html
+        return "index"; // returns old.html
     }
 
     @PostMapping("/upload")
@@ -41,4 +44,9 @@ public class ImageController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(zipFile);
     }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public void handleMaxUploadSizeExceeded() {
+        System.out.println("HELOO");
+    };
 }

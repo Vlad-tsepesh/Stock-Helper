@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Service
 @RequiredArgsConstructor
@@ -26,15 +29,49 @@ public class DescribeAndTagImageService implements DescribeAndTagImageUseCase {
     private final ImageArchivePort archiver;
 
     private static final int MAX_ATTEMPTS = 3;
+    private static int processNumber;
+    private static long startTime;
+
+//    @Override
+//    public Resource process(List<ImageRequest> imageRequests) {
+//        List<Resource> updatedResources = imageRequests.stream()
+//                .map(this::safeGenerateAndSetMetadata)
+//                .flatMap(Optional::stream)
+//                .toList();
+//
+//        return archiver.createArchive(updatedResources);
+//    }
 
     @Override
     public Resource process(List<ImageRequest> imageRequests) {
-        List<Resource> updatedResources = imageRequests.stream()
-                .map(this::safeGenerateAndSetMetadata)
-                .flatMap(Optional::stream)
-                .toList();
+        processNumber = 0;
+        startTime = System.currentTimeMillis();
+        // Limit concurrency to 5 threads
+        ExecutorService executor = Executors.newFixedThreadPool(5);
 
-        return archiver.createArchive(updatedResources);
+        try {
+            // Submit all images as tasks
+            List<Future<Optional<Resource>>> futures = imageRequests.stream()
+                    .map(image -> executor.submit(() -> safeGenerateAndSetMetadata(image)))
+                    .toList();
+
+            // Collect results
+            List<Resource> updatedResources = futures.stream()
+                    .map(f -> {
+                        try {
+                            return f.get(); // blocks until task finishes
+                        } catch (Exception e) {
+                            // log exception for failed image
+                            return Optional.<Resource>empty();
+                        }
+                    })
+                    .flatMap(Optional::stream)
+                    .toList();
+
+            return archiver.createArchive(updatedResources);
+        } finally {
+            executor.shutdown();
+        }
     }
 
     private Optional<Resource> safeGenerateAndSetMetadata(ImageRequest image) {
@@ -48,6 +85,7 @@ public class DescribeAndTagImageService implements DescribeAndTagImageUseCase {
             ImageDescription description = descriptionGenerator.generateDescription(resizedResource);
             try {
                 validator.validate(description);
+                System.out.println(processNumber++ + description.title() + ", getting description done. "+ (System.currentTimeMillis() - startTime)/1000);
                 return Optional.of(description);
             } catch (IllegalArgumentException e) {
                 // TODO: add proper logging
