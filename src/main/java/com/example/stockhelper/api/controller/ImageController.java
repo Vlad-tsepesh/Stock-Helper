@@ -1,7 +1,7 @@
 package com.example.stockhelper.api.controller;
 
 import com.example.stockhelper.application.port.in.DescribeAndTagImageUseCase;
-import com.example.stockhelper.application.service.DescribeAndTagImageService;
+import com.example.stockhelper.domain.model.ImageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -31,10 +33,17 @@ public class ImageController {
 
     @PostMapping("/upload")
     public ResponseEntity<byte[]> uploadFiles(MultipartFile[] images) throws IOException {
+        List<ImageRequest> inputImages = Arrays.stream(images)
+                .map(file -> new ImageRequest(file.getOriginalFilename(), file.getResource()))
+                .toList();
+
+        List<Resource> updatedResources = inputImages.stream()
+                .map(useCase::process)
+                        .toList();
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-            for (MultipartFile file : images) {
-                Resource updatedResource = useCase.process(file);
+                for (Resource updatedResource : updatedResources) {
                 zos.putNextEntry(new ZipEntry(Objects.requireNonNull(updatedResource.getFilename())));
                 updatedResource.getInputStream().transferTo(zos);
                 zos.closeEntry();

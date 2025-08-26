@@ -1,10 +1,11 @@
-package com.example.stockhelper.infrastructure.image;
+package com.example.stockhelper.infrastructure.adapters;
 
+import com.example.stockhelper.domain.model.ImageRequest;
 import com.example.stockhelper.application.port.out.ImageResizerPort;
+import com.example.stockhelper.utils.ImageUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -16,17 +17,15 @@ import java.io.IOException;
 public class ImageResizerAdapter implements ImageResizerPort {
 
     @Override
-    public Resource resizeImage(MultipartFile file, int maxSize) {
+    public Resource resizeImage(ImageRequest image, int maxSize) {
         try {
-            BufferedImage originalImage = ImageIO.read(file.getInputStream());
+            BufferedImage originalImage = ImageIO.read(image.content().getInputStream());
 
-            double scale = (double) maxSize / originalImage.getWidth();
-            int targetWidth = (int) (originalImage.getWidth() * scale);
-            int targetHeight = (int) (originalImage.getHeight() * scale);
+            Dimension newSize = ImageUtils.getScaledDimension(originalImage, 500);
 
-            BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+            BufferedImage resizedImage = new BufferedImage(newSize.width, newSize.height, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics2D = resizedImage.createGraphics();
-            graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+            graphics2D.drawImage(originalImage, 0, 0, newSize.width, newSize.height, null);
             graphics2D.dispose();
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

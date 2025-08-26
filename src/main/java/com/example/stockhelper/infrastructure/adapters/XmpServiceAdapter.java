@@ -1,5 +1,6 @@
-package com.example.stockhelper.infrastructure.xmp;
+package com.example.stockhelper.infrastructure.adapters;
 
+import com.example.stockhelper.domain.model.ImageRequest;
 import com.example.stockhelper.application.port.out.XmpUpdaterPort;
 import com.example.stockhelper.application.exceptions.XmpUpdateException;
 import com.example.stockhelper.domain.model.ImageDescription;
@@ -10,7 +11,6 @@ import org.apache.xmpbox.xml.XmpSerializer;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -20,9 +20,9 @@ import java.nio.charset.StandardCharsets;
 public class XmpServiceAdapter implements XmpUpdaterPort {
 
     @Override
-    public Resource updateXmp(MultipartFile file, ImageDescription imageDescription) {
+    public Resource updateXmp(ImageRequest image, ImageDescription imageDescription) {
 
-        try (InputStream is = file.getInputStream();
+        try (InputStream is = image.content().getInputStream();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             String xmpXml = serializeXmp(buildXmp(imageDescription));

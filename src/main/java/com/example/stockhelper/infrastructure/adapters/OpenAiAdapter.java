@@ -1,4 +1,4 @@
-package com.example.stockhelper.infrastructure.ai;
+package com.example.stockhelper.infrastructure.adapters;
 
 import com.example.stockhelper.application.port.out.ImageDescriptionGeneratorPort;
 import com.example.stockhelper.domain.model.ImageDescription;

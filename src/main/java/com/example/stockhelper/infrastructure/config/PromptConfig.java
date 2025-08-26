@@ -1,4 +1,4 @@
-package com.example.stockhelper.infrastructure.ai.configuration;
+package com.example.stockhelper.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

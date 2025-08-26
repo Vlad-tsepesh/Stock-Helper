@@ -1,4 +1,4 @@
-package com.example.stockhelper.application.components;
+package com.example.stockhelper.application;
 
 import com.example.stockhelper.domain.model.ImageDescription;
 import org.springframework.stereotype.Component;

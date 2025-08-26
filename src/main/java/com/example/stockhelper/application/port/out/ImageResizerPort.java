@@ -1,8 +1,8 @@
 package com.example.stockhelper.application.port.out;
 
+import com.example.stockhelper.domain.model.ImageRequest;
 import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface ImageResizerPort {
-    Resource resizeImage(MultipartFile file, int maxSize);
+    Resource resizeImage(ImageRequest image, int maxSize);
 }
