@@ -3,6 +3,7 @@ package com.example.stockhelper.api.controller;
 import com.example.stockhelper.application.port.in.DescribeAndTagImageUseCase;
 import com.example.stockhelper.domain.model.ImageRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -32,28 +33,17 @@ public class ImageController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<byte[]> uploadFiles(MultipartFile[] images) throws IOException {
+    public ResponseEntity<Resource> uploadFiles(MultipartFile[] images) throws IOException {
         List<ImageRequest> inputImages = Arrays.stream(images)
                 .map(file -> new ImageRequest(file.getOriginalFilename(), file.getResource()))
                 .toList();
 
-        List<Resource> updatedResources = inputImages.stream()
-                .map(useCase::process)
-                        .toList();
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-                for (Resource updatedResource : updatedResources) {
-                zos.putNextEntry(new ZipEntry(Objects.requireNonNull(updatedResource.getFilename())));
-                updatedResource.getInputStream().transferTo(zos);
-                zos.closeEntry();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Resource zipFile = useCase.process(inputImages);
 
-        byte[] zipBytes = baos.toByteArray();
-
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"images.zip\"").contentType(MediaType.APPLICATION_OCTET_STREAM).body(zipBytes);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"images.zip\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(zipFile);
     }
 }
