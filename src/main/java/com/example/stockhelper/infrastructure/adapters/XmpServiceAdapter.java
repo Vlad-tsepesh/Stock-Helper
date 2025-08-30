@@ -16,18 +16,27 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class XmpServiceAdapter implements XmpUpdaterPort {
+    private static final Logger log = LoggerFactory.getLogger(XmpServiceAdapter.class);
 
     @Override
     public Resource updateXmp(ImageRequest image, ImageDescription imageDescription) {
+        log.info("Updating XMP metadata for image: {}", image.content().getFilename());
+        log.debug("ImageDescription title: {}", imageDescription.title());
 
         try (InputStream is = image.content().getInputStream();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             String xmpXml = serializeXmp(buildXmp(imageDescription));
+            log.debug("Serialized XMP metadata: {}", xmpXml);
+            log.info("Writing XMP metadata into image stream...");
             new JpegXmpRewriter().updateXmpXml(is, outputStream, xmpXml);
 
+            log.info("XMP metadata updated successfully, returning resource: {}", sanitizeFilename(imageDescription.title()));
             return new ByteArrayResource(outputStream.toByteArray()) {
                 @Override
                 public String getFilename() {
@@ -36,6 +45,7 @@ public class XmpServiceAdapter implements XmpUpdaterPort {
             };
 
         } catch (Exception e) {
+            log.error("Failed to update XMP metadata for image: {}", image.content().getFilename(), e);
             throw new XmpUpdateException("Failed to update XMP metadata", e);
         }
     }

@@ -16,9 +16,14 @@ import org.springframework.util.MimeTypeUtils;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.client.ResourceAccessException;
+
 @Component
 @RequiredArgsConstructor
 public class OpenAiAdapter implements ImageDescriptionGeneratorPort {
+    private static final Logger log = LoggerFactory.getLogger(OpenAiAdapter.class);
 
     private final OpenAiChatModel chatModel;
     private final String stockDescriptionPrompt;
@@ -26,15 +31,33 @@ public class OpenAiAdapter implements ImageDescriptionGeneratorPort {
 
     @Override
     public ImageDescription generateDescription(Resource image) {
+        log.info("Generating AI description for image: {}", image.getFilename());
+        log.debug("Using stockDescriptionPrompt: {}", stockDescriptionPrompt);
         var userMessage = UserMessage.builder().text(stockDescriptionPrompt).media(List.of(new Media(MimeTypeUtils.IMAGE_PNG, image))).build();
-        String response = chatModel.call(new Prompt(List.of(userMessage), OpenAiChatOptions.builder().model("gpt-4o").build()).getUserMessage());
+        log.debug("Calling OpenAI chat model with prompt...");
+        String response;
+        try {
+            response = chatModel.call(new Prompt(List.of(userMessage), OpenAiChatOptions.builder().model("gpt-4o").build()).getUserMessage());
+        } catch (ResourceAccessException e) {
+            log.error("I/O error when calling OpenAI API", e);
+            // You can rethrow a custom exception or return null, depending on your design
+            throw new RuntimeException("Failed to call OpenAI API due to network issue", e);
+
+        } catch (Exception e) {
+            // Catch other unexpected exceptions
+            log.error("Unexpected error in OpenAI Adapter", e);
+            throw new RuntimeException("OpenAI Adapter failed", e);
+        }
+        log.debug("Received AI response: {}", response);
         return parseJson(response);
     }
 
     private ImageDescription parseJson(String json) {
         try {
+            log.info("Parsed AI response successfully into ImageDescription");
             return objectMapper.readValue(json, ImageDescription.class);
         } catch (JsonProcessingException e) {
+            log.error("Failed to parse AI response JSON: {}", json, e);
             throw new RuntimeException("Failed to parse AI response", e);
         }
     }

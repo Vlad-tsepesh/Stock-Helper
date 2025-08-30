@@ -13,10 +13,16 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class ZipArchiveAdapter implements ImageArchivePort {
+    private static final Logger log = LoggerFactory.getLogger(ZipArchiveAdapter.class);
+
     @Override
     public Resource createArchive(List<Resource> resources) {
+        log.info("Creating ZIP archive with {} resources", resources.size());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Set<String> usedNames = new HashSet<>(); // track filenames we already put
 
@@ -24,12 +30,16 @@ public class ZipArchiveAdapter implements ImageArchivePort {
             for (Resource resource : resources) {
                 String baseName = Objects.requireNonNull(resource.getFilename());
                 String entryName = makeUniqueName(baseName, usedNames);
+                log.debug("Adding file to archive: original='{}', entryName='{}'", baseName, entryName);
 
                 zos.putNextEntry(new ZipEntry(entryName));
                 resource.getInputStream().transferTo(zos);
+                log.info("ZIP archive created successfully, size: {} bytes", baos.size());
+
                 zos.closeEntry();
             }
         } catch (Exception e) {
+            log.error("Failed to create ZIP archive", e);
             throw new RuntimeException(e);
         }
 
