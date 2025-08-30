@@ -9,6 +9,8 @@ import com.example.stockhelper.application.validators.ImageDescriptionValidator;
 import com.example.stockhelper.domain.model.ImageDescription;
 import com.example.stockhelper.domain.model.ImageRequest;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +30,10 @@ public class DescribeAndTagImageService implements DescribeAndTagImageUseCase {
     private final XmpUpdaterPort updater;
     private final ImageDescriptionValidator validator;
     private final ImageArchivePort archiver;
+    private final static Logger logger = LoggerFactory.getLogger(DescribeAndTagImageService.class);
 
     private static final int MAX_ATTEMPTS = 3;
-    private static int processNumber;
+    private final AtomicInteger processCounter = new AtomicInteger();
     private static long startTime;
 
 //    @Override
@@ -44,7 +48,6 @@ public class DescribeAndTagImageService implements DescribeAndTagImageUseCase {
 
     @Override
     public Resource process(List<ImageRequest> imageRequests) {
-        processNumber = 0;
         startTime = System.currentTimeMillis();
         // Limit concurrency to 5 threads
         ExecutorService executor = Executors.newFixedThreadPool(5);
@@ -81,14 +84,20 @@ public class DescribeAndTagImageService implements DescribeAndTagImageUseCase {
     }
 
     private Optional<ImageDescription> tryGenerateValidDescription(Resource resizedResource) {
-        for (int attempts = 0; attempts < MAX_ATTEMPTS; attempts++) {
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             ImageDescription description = descriptionGenerator.generateDescription(resizedResource);
             try {
                 validator.validate(description);
-                System.out.println(processNumber++ + description.title() + ", getting description done. "+ (System.currentTimeMillis() - startTime)/1000);
+
+                long elapsed = (System.currentTimeMillis() - startTime) / 1000;
+                int current = processCounter.incrementAndGet();
+
+                logger.info("Image {} - {}: description generated on attempt {} after {}s",
+                        current, description.title(), attempt, elapsed);
+
                 return Optional.of(description);
             } catch (IllegalArgumentException e) {
-                // TODO: add proper logging
+                logger.warn("Image validation failed on attempt {}: {}", attempt, e.getMessage());
             }
         }
         return Optional.empty();
