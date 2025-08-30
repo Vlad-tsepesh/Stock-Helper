@@ -79,6 +79,7 @@ public class DescribeAndTagImageService implements DescribeAndTagImageUseCase {
 
     private Optional<Resource> safeGenerateAndSetMetadata(ImageRequest image) {
         Resource resizedResource = resizer.resizeImage(image, 500);
+        logger.info("Generating AI description for image: {}", image.filename());
         return tryGenerateValidDescription(resizedResource)
                 .map(desc -> updater.updateXmp(image, desc));
     }

@@ -53,7 +53,7 @@ public class XmpServiceAdapter implements XmpUpdaterPort {
     private XMPMetadata buildXmp(ImageDescription desc) {
         XMPMetadata xmp = XMPMetadata.createXMPMetadata();
         DublinCoreSchema dc = xmp.createAndAddDublinCoreSchema();
-        dc.setTitle(desc.title());
+        dc.setTitle(desc.description());
         dc.setDescription(desc.description());
         desc.keywords().forEach(dc::addSubject);
         return xmp;

@@ -31,22 +31,16 @@ public class OpenAiAdapter implements ImageDescriptionGeneratorPort {
 
     @Override
     public ImageDescription generateDescription(Resource image) {
-        log.info("Generating AI description for image: {}", image.getFilename());
+
         log.debug("Using stockDescriptionPrompt: {}", stockDescriptionPrompt);
         var userMessage = UserMessage.builder().text(stockDescriptionPrompt).media(List.of(new Media(MimeTypeUtils.IMAGE_PNG, image))).build();
         log.debug("Calling OpenAI chat model with prompt...");
         String response;
         try {
             response = chatModel.call(new Prompt(List.of(userMessage), OpenAiChatOptions.builder().model("gpt-4o").build()).getUserMessage());
-        } catch (ResourceAccessException e) {
+        }catch (ResourceAccessException e) {
             log.error("I/O error when calling OpenAI API", e);
-            // You can rethrow a custom exception or return null, depending on your design
-            throw new RuntimeException("Failed to call OpenAI API due to network issue", e);
-
-        } catch (Exception e) {
-            // Catch other unexpected exceptions
-            log.error("Unexpected error in OpenAI Adapter", e);
-            throw new RuntimeException("OpenAI Adapter failed", e);
+            response = "";
         }
         log.debug("Received AI response: {}", response);
         return parseJson(response);
