@@ -1,13 +1,249 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-  <title>Upload Folder</title>
+    <meta charset="UTF-8">
+    <title>Upload Folder - Modern Design</title>
+    <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: #f4f4f9;
+          color: #333;
+          padding: 30px;
+        }
+
+        h1 { font-weight: 600; margin-bottom: 10px; }
+
+        #info { font-size: 14px; color: #555; margin-bottom: 15px; }
+
+        #counter, #sizeCounter {
+            font-size: 13px; /* smaller than default 14px */
+            margin-top: 5px; /* optional: reduce spacing */
+        }
+
+        #error, #warning { margin-top: 10px; font-weight: bold; }
+        #error { color: #d9534f; }
+        #warning { color: #f0ad4e; }
+
+        #fileList {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-top: 15px;
+        }
+
+        .file-item {
+          position: relative;
+          width: 120px;
+          height: 120px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          overflow: hidden;
+          background: #fff;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .file-item img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: cover;
+        }
+
+        .remove-btn {
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          background: rgba(217, 83, 79, 0.9);
+          color: white;
+          border-radius: 50%;
+          width: 22px;
+          height: 22px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 14px;
+        }
+
+        button, #selectFilesBtn {
+          background: #007bff;
+          color: white;
+          border: none;
+          padding: 10px 18px;
+          font-size: 14px;
+          border-radius: 5px;
+          cursor: pointer;
+          margin-top: 15px;
+          transition: background 0.2s;
+        }
+
+        button:hover:not(:disabled), #selectFilesBtn:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+
+        input[type="file"] { display: none; }
+
+
+    </style>
 </head>
 <body>
-<h1>Select a folder to upload</h1>
-<form method="post" enctype="multipart/form-data" action="/upload">
-  <input type="file" name="images" multiple>
-  <button type="submit">Upload and Download ZIP</button>
+
+<h1>Upload Your JPG Files</h1>
+<p id="info">Maximum size per file: <span id="maxFileSizeDisplay"></span> MB. Total capacity per upload: 998 MB.</p>
+<p id="counter">0 / 50 files selected</p>
+<p id="sizeCounter">0 / 998 MB</p>
+
+<button type="button" id="selectFilesBtn">Select Files</button>
+<input type="file" id="fileInput" multiple accept=".jpg,.jpeg,image/jpeg">
+
+<form id="uploadForm" method="post" enctype="multipart/form-data" action="/upload">
+    <div id="fileList"></div>
+    <button id="submitBtn" type="submit">Upload and Download ZIP</button>
 </form>
+
+<p id="warning" style="color:#f0ad4e;font-weight:bold;margin-top:10px;"></p>
+<p id="error"></p>
+
+<script>
+    const MAX_FILES = 50;
+    const MAX_FILE_SIZE_MB = 998;
+    const TOTAL_SIZE_LIMIT_MB = 998;
+    const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+    const TOTAL_SIZE_LIMIT = TOTAL_SIZE_LIMIT_MB * 1024 * 1024;
+
+    const fileInput = document.getElementById('fileInput');
+    const selectFilesBtn = document.getElementById('selectFilesBtn');
+    const fileListDiv = document.getElementById('fileList');
+    const error = document.getElementById('error');
+    const warning = document.getElementById('warning');
+    const uploadForm = document.getElementById('uploadForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let selectedFiles = [];
+    document.getElementById('maxFileSizeDisplay').textContent = MAX_FILE_SIZE_MB;
+
+    selectFilesBtn.addEventListener('click', () => fileInput.click());
+
+    function updateFileList() {
+    fileListDiv.innerHTML = '';
+    let totalSize = 0;
+
+    selectedFiles.forEach((file, index) => {
+        totalSize += file.size;
+
+        const div = document.createElement('div');
+        div.className = 'file-item';
+
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        div.appendChild(img);
+
+        const removeBtn = document.createElement('span');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', () => {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+        });
+        div.appendChild(removeBtn);
+
+        fileListDiv.appendChild(div);
+    });
+
+    // Update counters
+    const counter = document.getElementById('counter');
+    const sizeCounter = document.getElementById('sizeCounter');
+
+    counter.textContent = `${selectedFiles.length} / ${MAX_FILES} files selected`;
+    sizeCounter.textContent = `${Math.round(totalSize / (1024*1024))} / ${TOTAL_SIZE_LIMIT_MB} MB`;
+
+    // Change color if limit exceeded
+    counter.style.color = selectedFiles.length > MAX_FILES ? 'red' : '#333';
+    sizeCounter.style.color = totalSize > TOTAL_SIZE_LIMIT ? 'red' : '#333';
+
+    // Disable submit if total size exceeded
+    submitBtn.disabled = totalSize > TOTAL_SIZE_LIMIT || selectedFiles.length > MAX_FILES;
+
+    // Update warning message
+    if (totalSize > TOTAL_SIZE_LIMIT && selectedFiles.length > MAX_FILES) {
+        warning.textContent = `Warning: total size exceeded by ${((totalSize - TOTAL_SIZE_LIMIT)/(1024*1024)).toFixed(2)} MB and more than ${MAX_FILES} files selected!`;
+    } else if (totalSize > TOTAL_SIZE_LIMIT) {
+        warning.textContent = `Warning: total size exceeded by ${((totalSize - TOTAL_SIZE_LIMIT)/(1024*1024)).toFixed(2)} MB!`;
+    } else if (selectedFiles.length > MAX_FILES) {
+        warning.textContent = `Warning: more than ${MAX_FILES} files selected!`;
+    } else {
+        warning.textContent = '';
+    }
+}
+
+
+    fileInput.addEventListener('change', () => {
+    let files = Array.from(fileInput.files);
+
+    for (const file of files) {
+        const fileType = file.type.toLowerCase();
+        if (!fileType.includes('jpeg') && !fileType.includes('jpg')) {
+            continue; // skip non-JPG silently
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            continue; // skip oversized files silently
+        }
+
+        // Skip duplicates silently
+        const duplicate = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+        if (duplicate) continue;
+
+        selectedFiles.push(file);
+    }
+
+    fileInput.value = '';
+    updateFileList();
+});
+
+
+    uploadForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    if (selectedFiles.length === 0) {
+        error.textContent = 'Please add at least one file to upload.';
+        return;
+    }
+
+    // Disable button and show message
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading...';
+    selectFilesBtn.disabled = true;
+
+    const formData = new FormData();
+    selectedFiles.forEach(f => formData.append('images', f));
+
+    fetch(uploadForm.action, { method: 'POST', body: formData })
+        .then(res => {
+            if (!res.ok) throw new Error('Upload failed');
+            return res.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'images.zip';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            alert('Upload and download successful!');
+        })
+        .catch(err => alert('Upload error: ' + err))
+        .finally(() => {
+            // Re-enable buttons after process is done
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Upload and Download ZIP';
+            selectFilesBtn.disabled = false;
+        });
+  });
+
+</script>
+
 </body>
 </html>
