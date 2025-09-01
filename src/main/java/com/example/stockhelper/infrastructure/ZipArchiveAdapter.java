@@ -1,4 +1,4 @@
-package com.example.stockhelper.infrastructure.adapters;
+package com.example.stockhelper.infrastructure;
 
 import com.example.stockhelper.application.ports.out.ImageArchivePort;
 import org.springframework.core.io.ByteArrayResource;
