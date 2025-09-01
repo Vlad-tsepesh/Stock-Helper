@@ -37,7 +37,11 @@ public class OpenAiAdapter implements ImageDescriptionGeneratorPort {
         log.debug("Calling OpenAI chat model with prompt...");
         String response;
         try {
-            response = chatModel.call(new Prompt(List.of(userMessage), OpenAiChatOptions.builder().model("gpt-4o").build()).getUserMessage());
+            response = chatModel.call(
+                    new Prompt(List.of(userMessage),
+                            OpenAiChatOptions
+                            .builder()
+                            .model("gpt-4o").build()).getUserMessage());
         }catch (ResourceAccessException e) {
             log.error("I/O error when calling OpenAI API", e);
             response = "";

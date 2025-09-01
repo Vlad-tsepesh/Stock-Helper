@@ -48,49 +48,14 @@ public class ImageController {
                 .toList();
 
 
-        Resource zipFile;
-        try {
-            zipFile = useCase.process(inputImages);
-            if (zipFile != null) {
-                logger.info("ZIP archive created successfully with {} images", inputImages.size());
-            } else {
-                logger.warn("ZIP archive creation returned null");
-            }
-        } catch (Exception e) {
-            logger.error("Error processing uploaded images", e);
-            throw e;
-        }
+
+        Resource zipFile = useCase.process(inputImages);
+
+
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"images.zip\"")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(zipFile);
-    }
-
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<String> handleMaxSizeException(MaxUploadSizeExceededException exc) {
-        logger.warn("Upload exceeded maximum size: {}", exc.getMessage());
-        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body("File size exceeds limit!");
-    }
-
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<String> handleIOException(IOException exc) {
-        logger.error("IO exception during upload: {}", exc.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Failed to process uploaded files.");
-    }
-
-    @ExceptionHandler(MultipartException.class)
-    public ResponseEntity<String> handleMultipartException(MultipartException ex) {
-        Throwable cause = ex.getCause();
-        if (cause instanceof FileCountLimitExceededException fileEx) {
-            logger.warn("File upload count limit exceeded: {}", fileEx.getMessage());
-            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                    .body("File upload limit exceeded: " + fileEx.getMessage());
-        }
-        logger.error("Multipart exception: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Invalid multipart request");
     }
 }

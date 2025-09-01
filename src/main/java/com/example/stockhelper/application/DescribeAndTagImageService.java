@@ -36,46 +36,46 @@ public class DescribeAndTagImageService implements DescribeAndTagImageUseCase {
     private final AtomicInteger processCounter = new AtomicInteger();
     private static long startTime;
 
-//    @Override
-//    public Resource process(List<ImageRequest> imageRequests) {
-//        List<Resource> updatedResources = imageRequests.stream()
-//                .map(this::safeGenerateAndSetMetadata)
-//                .flatMap(Optional::stream)
-//                .toList();
-//
-//        return archiver.createArchive(updatedResources);
-//    }
-
     @Override
     public Resource process(List<ImageRequest> imageRequests) {
-        startTime = System.currentTimeMillis();
-        // Limit concurrency to 5 threads
-        ExecutorService executor = Executors.newFixedThreadPool(5);
+        List<Resource> updatedResources = imageRequests.stream()
+                .map(this::safeGenerateAndSetMetadata)
+                .flatMap(Optional::stream)
+                .toList();
 
-        try {
-            // Submit all images as tasks
-            List<Future<Optional<Resource>>> futures = imageRequests.stream()
-                    .map(image -> executor.submit(() -> safeGenerateAndSetMetadata(image)))
-                    .toList();
-
-            // Collect results
-            List<Resource> updatedResources = futures.stream()
-                    .map(f -> {
-                        try {
-                            return f.get(); // blocks until task finishes
-                        } catch (Exception e) {
-                            // log exception for failed image
-                            return Optional.<Resource>empty();
-                        }
-                    })
-                    .flatMap(Optional::stream)
-                    .toList();
-
-            return archiver.createArchive(updatedResources);
-        } finally {
-            executor.shutdown();
-        }
+        return archiver.createArchive(updatedResources);
     }
+
+//    @Override
+//    public Resource process(List<ImageRequest> imageRequests) {
+//        startTime = System.currentTimeMillis();
+//        // Limit concurrency to 5 threads
+//        ExecutorService executor = Executors.newFixedThreadPool(5);
+//
+//        try {
+//            // Submit all images as tasks
+//            List<Future<Optional<Resource>>> futures = imageRequests.stream()
+//                    .map(image -> executor.submit(() -> safeGenerateAndSetMetadata(image)))
+//                    .toList();
+//
+//            // Collect results
+//            List<Resource> updatedResources = futures.stream()
+//                    .map(f -> {
+//                        try {
+//                            return f.get(); // blocks until task finishes
+//                        } catch (Exception e) {
+//                            // log exception for failed image
+//                            return Optional.<Resource>empty();
+//                        }
+//                    })
+//                    .flatMap(Optional::stream)
+//                    .toList();
+//
+//            return archiver.createArchive(updatedResources);
+//        } finally {
+//            executor.shutdown();
+//        }
+//    }
 
     private Optional<Resource> safeGenerateAndSetMetadata(ImageRequest image) {
         Resource resizedResource = resizer.resizeImage(image, 500);
