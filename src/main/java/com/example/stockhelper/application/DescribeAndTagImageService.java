@@ -16,25 +16,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
 public class DescribeAndTagImageService implements DescribeAndTagImageUseCase {
 
+    private final static Logger logger = LoggerFactory.getLogger(DescribeAndTagImageService.class);
+    private static final int MAX_ATTEMPTS = 3;
+    private static long startTime;
     private final ImageResizerPort resizer;
     private final ImageDescriptionGeneratorPort descriptionGenerator;
     private final XmpUpdaterPort updater;
     private final ImageDescriptionValidator validator;
     private final ImageArchivePort archiver;
-    private final static Logger logger = LoggerFactory.getLogger(DescribeAndTagImageService.class);
-
-    private static final int MAX_ATTEMPTS = 3;
     private final AtomicInteger processCounter = new AtomicInteger();
-    private static long startTime;
 
     @Override
     public Resource process(List<ImageRequest> imageRequests) {
@@ -45,37 +41,6 @@ public class DescribeAndTagImageService implements DescribeAndTagImageUseCase {
 
         return archiver.createArchive(updatedResources);
     }
-
-//    @Override
-//    public Resource process(List<ImageRequest> imageRequests) {
-//        startTime = System.currentTimeMillis();
-//        // Limit concurrency to 5 threads
-//        ExecutorService executor = Executors.newFixedThreadPool(5);
-//
-//        try {
-//            // Submit all images as tasks
-//            List<Future<Optional<Resource>>> futures = imageRequests.stream()
-//                    .map(image -> executor.submit(() -> safeGenerateAndSetMetadata(image)))
-//                    .toList();
-//
-//            // Collect results
-//            List<Resource> updatedResources = futures.stream()
-//                    .map(f -> {
-//                        try {
-//                            return f.get(); // blocks until task finishes
-//                        } catch (Exception e) {
-//                            // log exception for failed image
-//                            return Optional.<Resource>empty();
-//                        }
-//                    })
-//                    .flatMap(Optional::stream)
-//                    .toList();
-//
-//            return archiver.createArchive(updatedResources);
-//        } finally {
-//            executor.shutdown();
-//        }
-//    }
 
     private Optional<Resource> safeGenerateAndSetMetadata(ImageRequest image) {
         Resource resizedResource = resizer.resizeImage(image, 500);
